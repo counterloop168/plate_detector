@@ -1,0 +1,40 @@
+# Plate Detection Dependencies
+# Generated from Webserver project
+
+# PyTorch Extra Index URL for CUDA support (in addition to default PyPI)
+--extra-index-url https://download.pytorch.org/whl/cu128
+
+# Core Computer Vision & AI
+opencv-python==4.7.0.72
+opencv-python-headless==4.9.0.80
+ultralytics==8.3.218
+torch==2.7.0
+torchvision==0.22.0
+torchaudio==2.7.0
+numpy>=1.24.3,<2.0
+fast-alpr>=0.3.0
+onnxruntime>=1.16.0
+
+# Image Processing
+pillow>=11.3.0
+imagehash>=4.3.0
+
+# Google Drive & Sheets Integration
+pydrive==1.3.1
+gspread>=6.2.1
+oauth2client>=4.1.3
+
+# Database (if using SQLite)
+# Built-in with Python
+
+# Utilities
+pyyaml==6.0.1
+python-dotenv>=1.1.1
+requests>=2.31.0
+
+# Additional ML dependencies
+protobuf>=3.9.2
+
+# Web framework
+flask>=2.3.2
+flask-cors>=4.0.0

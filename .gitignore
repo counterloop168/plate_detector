@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Models (large files)
+# utils/models/*.pt  # Commented out to allow committing model files
+*.pth
+*.onnx
+
+# Credentials (sensitive)
+utils/plate_detection_credentials.json
+*credentials*.json
+*.json.bak
+
+# Logs
+logs/
+*.log
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Outputs
+captures/
+outputs/
+results/

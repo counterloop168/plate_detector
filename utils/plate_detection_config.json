@@ -1,0 +1,40 @@
+{
+  "enabled_cameras": [1, 2],
+  "detection_fps": 2,
+  "confidence_threshold": 0.5,
+  "deduplication": {
+    "time_window_seconds": 5,
+    "hash_threshold": 0.95,
+    "min_votes_required": 1,
+    "min_image_save_interval": 300
+  },
+  "models": {
+    "detector_path": "utils/models/best.pt",
+    "ocr_model": "cct-s-v1-global-model"
+  },
+  "detection_mode": "region_based",
+  "region_config": {
+    "camera_1": {
+      "crop_type": "bottom_right",
+      "crop_size": 800,
+      "comment": "Camera 1"
+    },
+    "camera_2": {
+      "crop_type": "bottom_left",
+      "crop_size": 800,
+      "comment": "Camera 2"
+    }
+  },
+  "storage": {
+    "local_retention_days": 7,
+    "drive_retention_days": 7
+  },
+  "google_drive": {
+    "base_folder_id": "1j2so0cgczeKpXYQ-onDPhKKrv2t6Htd7",
+    "enabled": false
+  },
+  "google_sheets": {
+    "spreadsheet_id": "1nYIssRMa5OSlRu3daV5Z9wTIB7vMrh42ci7MfDAnbao",
+    "enabled": false
+  }
+}

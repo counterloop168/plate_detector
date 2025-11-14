@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Camera Feed - Plate Detection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .camera-section {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .camera-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .camera-title {
+            font-size: 1.5rem;
+            color: #2d3748;
+            font-weight: 600;
+        }
+        
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-start {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-start:hover {
+            background: #38a169;
+        }
+        
+        .btn-stop {
+            background: #f56565;
+            color: white;
+        }
+        
+        .btn-stop:hover {
+            background: #e53e3e;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .video-container {
+            position: relative;
+            background: #000;
+            border-radius: 10px;
+            overflow: auto;
+            min-height: 480px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .video-stream {
+            max-width: none;
+            height: auto;
+            display: block;
+        }
+        
+        .video-placeholder {
+            color: #a0aec0;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .video-placeholder h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .status-active {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .status-inactive {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            color: #718096;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-info {
+            background: #bee3f8;
+            color: #2c5282;
+            border-left: 4px solid #3182ce;
+        }
+        
+        .alert-success {
+            background: #c6f6d5;
+            color: #22543d;
+            border-left: 4px solid #38a169;
+        }
+        
+        .alert-error {
+            background: #fed7d7;
+            color: #742a2a;
+            border-left: 4px solid #e53e3e;
+        }
+        
+        .settings-form {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 5px;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .nav-links {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .nav-links a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 0 15px;
+        }
+        
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📹 Live Camera Feed</h1>
+            <p>Real-time License Plate Detection</p>
+        </header>
+        
+        <div class="main-content">
+            <div id="alertContainer"></div>
+            
+            <!-- Camera 1 Section -->
+            <div class="camera-section">
+                <div class="camera-header">
+                    <div>
+                        <span class="camera-title">Camera 1 (IN)</span>
+                        <span class="status-badge status-inactive" id="status1">Inactive</span>
+                    </div>
+                    <div class="camera-controls">
+                        <button class="btn btn-start" onclick="startCamera(1)" id="startBtn1">
+                            ▶️ Start Camera
+                        </button>
+                        <button class="btn btn-stop" onclick="stopCamera(1)" id="stopBtn1" disabled>
+                            ⏹️ Stop Camera
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="video-container" id="videoContainer1">
+                    <div class="video-placeholder">
+                        <h3>Camera 1 Not Active</h3>
+                        <p>Click "Start Camera" to begin live detection</p>
+                    </div>
+                </div>
+                
+                <div class="stats-grid" id="stats1">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Detections</div>
+                        <div class="stat-value" id="total1">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Last Detection</div>
+                        <div class="stat-value" id="last1" style="font-size: 1rem;">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Status</div>
+                        <div class="stat-value" id="streamStatus1" style="font-size: 1.2rem;">Stopped</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings Section -->
+            <div class="camera-section">
+                <h2 style="margin-bottom: 15px;">⚙️ Camera Settings</h2>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label for="cameraSource1">Camera 1 Source:</label>
+                        <select id="cameraSource1">
+                            <option value="0">Default Camera (0)</option>
+                            <option value="1">Camera 1</option>
+                            <option value="2">Camera 2</option>
+                            <option value="custom">Custom URL/Path</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="customSource1Container" style="display: none;">
+                        <label for="customSource1">Custom Source URL/Path:</label>
+                        <input type="text" id="customSource1" placeholder="e.g., rtsp://192.168.1.100:554/stream or /dev/video0">
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="autoSave1" checked>
+                            Auto-save detections to Drive/Sheets
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation Links -->
+            <div class="nav-links">
+                <a href="/">← Back to Dashboard</a>
+                <a href="/test">API Test Page</a>
+                <a href="/api/recent-detections?minutes=5" target="_blank">Recent Detections (JSON)</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let updateInterval = null;
+        
+        // Show camera source custom input when selected
+        document.getElementById('cameraSource1').addEventListener('change', function() {
+            const customContainer = document.getElementById('customSource1Container');
+            if (this.value === 'custom') {
+                customContainer.style.display = 'block';
+            } else {
+                customContainer.style.display = 'none';
+            }
+        });
+        
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alertContainer.innerHTML = '';
+            alertContainer.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+        
+        async function startCamera(cameraId) {
+            try {
+                const startBtn = document.getElementById(`startBtn${cameraId}`);
+                const stopBtn = document.getElementById(`stopBtn${cameraId}`);
+                
+                startBtn.disabled = true;
+                startBtn.textContent = '⏳ Starting...';
+                
+                // Get camera source
+                let cameraSource = document.getElementById(`cameraSource${cameraId}`).value;
+                if (cameraSource === 'custom') {
+                    cameraSource = document.getElementById(`customSource${cameraId}`).value;
+                    if (!cameraSource) {
+                        showAlert('Please enter a custom source URL/path', 'error');
+                        startBtn.disabled = false;
+                        startBtn.textContent = '▶️ Start Camera';
+                        return;
+                    }
+                }
+                
+                // Start camera via API
+                const response = await fetch('/api/camera/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        camera_id: cameraId,
+                        camera_source: cameraSource
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update UI
+                    const videoContainer = document.getElementById(`videoContainer${cameraId}`);
+                    videoContainer.innerHTML = `
+                        <img src="${data.stream_url}?source=${encodeURIComponent(cameraSource)}" 
+                             class="video-stream" 
+                             alt="Camera ${cameraId} Stream"
+                             onerror="handleStreamError(${cameraId})">
+                    `;
+                    
+                    // Update buttons
+                    startBtn.disabled = true;
+                    stopBtn.disabled = false;
+                    startBtn.textContent = '▶️ Start Camera';
+                    
+                    // Update status
+                    const status = document.getElementById(`status${cameraId}`);
+                    status.className = 'status-badge status-active';
+                    status.textContent = 'Active';
+                    
+                    document.getElementById(`streamStatus${cameraId}`).textContent = 'Running';
+                    
+                    showAlert(`Camera ${cameraId} started successfully`, 'success');
+                    
+                    // Start updating stats
+                    startStatsUpdate();
+                } else {
+                    showAlert(`Error: ${data.error}`, 'error');
+                    startBtn.disabled = false;
+                    startBtn.textContent = '▶️ Start Camera';
+                }
+            } catch (error) {
+                console.error('Error starting camera:', error);
+                showAlert(`Failed to start camera: ${error.message}`, 'error');
+                const startBtn = document.getElementById(`startBtn${cameraId}`);
+                startBtn.disabled = false;
+                startBtn.textContent = '▶️ Start Camera';
+            }
+        }
+        
+        async function stopCamera(cameraId) {
+            try {
+                const stopBtn = document.getElementById(`stopBtn${cameraId}`);
+                stopBtn.disabled = true;
+                stopBtn.textContent = '⏳ Stopping...';
+                
+                const response = await fetch('/api/camera/stop', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ camera_id: cameraId })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update UI
+                    const videoContainer = document.getElementById(`videoContainer${cameraId}`);
+                    videoContainer.innerHTML = `
+                        <div class="video-placeholder">
+                            <h3>Camera ${cameraId} Not Active</h3>
+                            <p>Click "Start Camera" to begin live detection</p>
+                        </div>
+                    `;
+                    
+                    // Update buttons
+                    const startBtn = document.getElementById(`startBtn${cameraId}`);
+                    startBtn.disabled = false;
+                    stopBtn.disabled = true;
+                    stopBtn.textContent = '⏹️ Stop Camera';
+                    
+                    // Update status
+                    const status = document.getElementById(`status${cameraId}`);
+                    status.className = 'status-badge status-inactive';
+                    status.textContent = 'Inactive';
+                    
+                    document.getElementById(`streamStatus${cameraId}`).textContent = 'Stopped';
+                    
+                    showAlert(`Camera ${cameraId} stopped`, 'info');
+                    
+                    // Stop updating stats
+                    if (updateInterval) {
+                        clearInterval(updateInterval);
+                        updateInterval = null;
+                    }
+                } else {
+                    showAlert(`Error: ${data.error}`, 'error');
+                    stopBtn.disabled = false;
+                    stopBtn.textContent = '⏹️ Stop Camera';
+                }
+            } catch (error) {
+                console.error('Error stopping camera:', error);
+                showAlert(`Failed to stop camera: ${error.message}`, 'error');
+                const stopBtn = document.getElementById(`stopBtn${cameraId}`);
+                stopBtn.disabled = false;
+                stopBtn.textContent = '⏹️ Stop Camera';
+            }
+        }
+        
+        function handleStreamError(cameraId) {
+            console.error(`Stream error for camera ${cameraId}`);
+            showAlert(`Stream error for camera ${cameraId}. The camera may have stopped.`, 'error');
+        }
+        
+        function startStatsUpdate() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+            
+            updateInterval = setInterval(updateStats, 2000);
+            updateStats(); // Initial update
+        }
+        
+        async function updateStats() {
+            try {
+                const response = await fetch('/api/recent-detections?camera_id=1&minutes=60');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const camera1Detections = data.detections.filter(d => d.camera_id === 1);
+                    
+                    document.getElementById('total1').textContent = camera1Detections.length;
+                    
+                    if (camera1Detections.length > 0) {
+                        const lastDetection = camera1Detections[0];
+                        document.getElementById('last1').textContent = lastDetection.plate_number;
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating stats:', error);
+            }
+        }
+        
+        // Check camera status on load
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/api/camera/status');
+                const data = await response.json();
+                
+                if (data.success && data.cameras) {
+                    // Update UI based on camera status
+                    Object.entries(data.cameras).forEach(([cameraId, isActive]) => {
+                        if (isActive) {
+                            const startBtn = document.getElementById(`startBtn${cameraId}`);
+                            const stopBtn = document.getElementById(`stopBtn${cameraId}`);
+                            
+                            if (startBtn && stopBtn) {
+                                startBtn.disabled = true;
+                                stopBtn.disabled = false;
+                                
+                                const status = document.getElementById(`status${cameraId}`);
+                                if (status) {
+                                    status.className = 'status-badge status-active';
+                                    status.textContent = 'Active';
+                                }
+                            }
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error checking camera status:', error);
+            }
+        });
+    </script>
+</body>
+</html>
