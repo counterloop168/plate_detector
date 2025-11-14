@@ -339,5 +339,5 @@ MIT License - see LICENSE file for details
 
 ## Contact
 
-- GitHub: [@OliverQueen168](https://github.com/OliverQueen168)
-- Repository: [plate_detector](https://github.com/OliverQueen168/plate_detector)
+- GitHub: [@OliverQueen168](https://github.com/counterloop168)
+- Repository: [plate_detector](https://github.com/counterloop168/plate_detector)
